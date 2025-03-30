@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional HTML to PDF Converter | Blue Theme</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a6bdf;
+            --primary-dark: #3a56c0;
+            --primary-darker: #2a42a0;
+            --primary-light: #e8ebfa;
+            --primary-lighter: #f5f7ff;
+            --text-light: #ffffff;
+            --text-dark: #2d3748;
+            --text-gray: #6b7280;
+            --text-light-gray: #9ca3af;
+            --background: #ffffff;
+            --border: #e5e7eb;
+            --border-light: #f3f4f6;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f9fafb;
+            color: var(--text-dark);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--text-light);
+            padding: 1.25rem 2rem;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .tool-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            height: calc(100vh - 180px);
+            min-height: 600px;
+        }
+
+        @media (max-width: 1024px) {
+            .tool-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+
+        .panel {
+            background: var(--background);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 1rem 1.5rem;
+            background: var(--primary-lighter);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-weight: 600;
+            color: var(--primary-dark);
+            font-size: 0.9375rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .panel-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .panel-body {
+            flex: 1;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #html-editor {
+            flex: 1;
+            width: 100%;
+            padding: 1.25rem;
+            border: none;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            resize: none;
+            background: var(--background);
+            color: var(--text-dark);
+            tab-size: 2;
+        }
+
+        #html-editor:focus {
+            outline: none;
+            box-shadow: inset 0 0 0 2px var(--primary-light);
+        }
+
+        #preview-frame {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: white;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: var(--primary-color);
+            color: var(--text-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn:active {
+            background: var(--primary-darker);
+            transform: translateY(1px);
+        }
+
+        .btn:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background: rgba(74, 107, 223, 0.1);
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .controls {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-light);
+            background: var(--primary-lighter);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .options {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .option-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .option-label {
+            font-size: 0.8125rem;
+            color: var(--text-gray);
+            font-weight: 500;
+        }
+
+        .option-select {
+            padding: 0.375rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.8125rem;
+            background: var(--background);
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .option-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 107, 223, 0.2);
+        }
+
+        .status {
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            margin: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.8125rem;
+            position: absolute;
+            bottom: 1rem;
+            left: 1.5rem;
+            right: 1.5rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: var(--transition);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .status.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .status.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border-left: 3px solid var(--success);
+        }
+
+        .status.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border-left: 3px solid var(--error);
+        }
+
+        .status.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border-left: 3px solid var(--warning);
+        }
+
+        .status-icon {
+            font-size: 1rem;
+        }
+
+        .progress-container {
+            width: 100%;
+            background-color: rgba(74, 107, 223, 0.1);
+            border-radius: var(--radius-sm);
+            margin: 0.75rem 1.5rem;
+            overflow: hidden;
+            position: absolute;
+            bottom: 1rem;
+            left: 1.5rem;
+            right: 1.5rem;
+            display: none;
+            z-index: 10;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--primary-dark);
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 1.25rem;
+            font-size: 0.75rem;
+            color: var(--text-light-gray);
+            border-top: 1px solid var(--border-light);
+        }
+
+        /* Tooltip styles */
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-dark);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            white-space: nowrap;
+            pointer-events: none;
+            margin-bottom: 0.5rem;
+            z-index: 20;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: flex-start;
+            }
+
+            .nav-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .main-content {
+                padding: 1.25rem;
+            }
+
+            .options {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .option-group {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-file-pdf logo-icon"></i>
+                    <span>HTML to PDF Converter</span>
+                </div>
+                <div class="nav-actions">
+                    <button class="btn btn-sm btn-outline" id="docs-btn" data-tooltip="View documentation">
+                        <i class="fas fa-book"></i> Docs
+                    </button>
+                    <button class="btn btn-sm" id="feedback-btn" data-tooltip="Send feedback">
+                        <i class="fas fa-comment"></i> Feedback
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="tool-container">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">
+                            <i class="fas fa-code"></i> HTML Editor
+                        </h3>
+                        <div class="panel-actions">
+                            <button class="btn btn-sm btn-outline" id="sample-btn" data-tooltip="Load sample HTML">
+                                <i class="fas fa-lightbulb"></i> Sample
+                            </button>
+                            <button class="btn btn-sm btn-outline" id="clear-btn" data-tooltip="Clear editor">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <textarea id="html-editor" spellcheck="false">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Professional Document&lt;/title&gt;
+    &lt;style&gt;
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6; 
+            padding: 2rem;
+            color: #2d3748;
+        }
+        h1 { 
+            color: #4a6bdf;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1.5rem 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Professional PDF Document&lt;/h1&gt;
+    &lt;p&gt;This document demonstrates the conversion of HTML to a polished PDF.&lt;/p&gt;
+    
+    &lt;table&gt;
+        &lt;tr&gt;
+            &lt;th&gt;Item&lt;/th&gt;
+            &lt;th&gt;Description&lt;/th&gt;
+            &lt;th&gt;Quantity&lt;/th&gt;
+            &lt;th&gt;Price&lt;/th&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;Web Design&lt;/td&gt;
+            &lt;td&gt;Professional website redesign&lt;/td&gt;
+            &lt;td&gt;1&lt;/td&gt;
+            &lt;td&gt;$2,500.00&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;SEO Package&lt;/td&gt;
+            &lt;td&gt;Search engine optimization&lt;/td&gt;
+            &lt;td&gt;1&lt;/td&gt;
+            &lt;td&gt;$1,200.00&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;Content Creation&lt;/td&gt;
+            &lt;td&gt;Website copywriting&lt;/td&gt;
+            &lt;td&gt;10&lt;/td&gt;
+            &lt;td&gt;$800.00&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/table&gt;
+    
+    &lt;div style="margin-top: 2rem; text-align: right;"&gt;
+        &lt;p&gt;&lt;strong&gt;Total: $4,500.00&lt;/strong&gt;&lt;/p&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</textarea>
+                    </div>
+                    <div class="controls">
+                        <div class="options">
+                            <div class="option-group">
+                                <label class="option-label">Page Size:</label>
+                                <select class="option-select" id="page-size">
+                                    <option value="a4">A4</option>
+                                    <option value="letter" selected>Letter</option>
+                                    <option value="legal">Legal</option>
+                                </select>
+                            </div>
+                            <div class="option-group">
+                                <label class="option-label">Orientation:</label>
+                                <select class="option-select" id="page-orientation">
+                                    <option value="portrait" selected>Portrait</option>
+                                    <option value="landscape">Landscape</option>
+                                </select>
+                            </div>
+                            <div class="option-group">
+                                <label class="option-label">Margin:</label>
+                                <select class="option-select" id="margin">
+                                    <option value="10">10mm</option>
+                                    <option value="15" selected>15mm</option>
+                                    <option value="20">20mm</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn" id="preview-btn">
+                            <i class="fas fa-eye btn-icon"></i> Preview
+                        </button>
+                    </div>
+                    <div class="status" id="status-message">
+                        <i class="fas fa-check-circle status-icon"></i>
+                        <div id="status-text">Ready</div>
+                    </div>
+                    <div class="progress-container" id="progress-container">
+                        <div class="progress-bar" id="progress-bar"></div>
+                        <div class="progress-text" id="progress-text">Processing...</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">
+                            <i class="fas fa-eye"></i> Live Preview
+                        </h3>
+                        <div class="panel-actions">
+                            <button class="btn btn-sm btn-outline" id="refresh-btn" data-tooltip="Refresh preview">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <iframe id="preview-frame"></iframe>
+                    </div>
+                    <div class="controls">
+                        <button class="btn btn-outline" id="export-html-btn">
+                            <i class="fas fa-file-code btn-icon"></i> Export HTML
+                        </button>
+                        <button class="btn" id="convert-btn">
+                            <i class="fas fa-file-pdf btn-icon"></i> Convert to PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>© 2023 HTML to PDF Converter | All conversions happen locally in your browser</p>
+        </footer>
+    </div>
+
+    <script>
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+        
+        // DOM Elements
+        const htmlEditor = document.getElementById('html-editor');
+        const previewFrame = document.getElementById('preview-frame');
+        const previewBtn = document.getElementById('preview-btn');
+        const convertBtn = document.getElementById('convert-btn');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const sampleBtn = document.getElementById('sample-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const exportHtmlBtn = document.getElementById('export-html-btn');
+        const docsBtn = document.getElementById('docs-btn');
+        const feedbackBtn = document.getElementById('feedback-btn');
+        const statusMessage = document.getElementById('status-message');
+        const statusText = document.getElementById('status-text');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        
+        // Options
+        const pageSizeSelect = document.getElementById('page-size');
+        const pageOrientationSelect = document.getElementById('page-orientation');
+        const marginSelect = document.getElementById('margin');
+        
+        // State
+        let isProcessing = false;
+        
+        // Event Listeners
+        previewBtn.addEventListener('click', previewHtml);
+        convertBtn.addEventListener('click', convertToPdf);
+        refreshBtn.addEventListener('click', refreshPreview);
+        sampleBtn.addEventListener('click', loadSample);
+        clearBtn.addEventListener('click', clearEditor);
+        exportHtmlBtn.addEventListener('click', exportHtml);
+        docsBtn.addEventListener('click', () => showStatus('Documentation coming soon!', 'warning'));
+        feedbackBtn.addEventListener('click', () => showStatus('Feedback feature coming soon!', 'warning'));
+        
+        // Initial preview
+        setTimeout(previewHtml, 300);
+        
+        // Functions
+        function previewHtml() {
+            try {
+                const htmlContent = htmlEditor.value.trim();
+                
+                if (!htmlContent) {
+                    showStatus('Please enter some HTML content', 'warning');
+                    return;
+                }
+                
+                // Write HTML to iframe
+                const iframeDoc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+                iframeDoc.open();
+                iframeDoc.write(htmlContent);
+                iframeDoc.close();
+                
+                showStatus('HTML preview updated successfully', 'success');
+            } catch (error) {
+                showStatus('Error rendering HTML: ' + error.message, 'error');
+                console.error('Preview error:', error);
+            }
+        }
+        
+        function refreshPreview() {
+            previewHtml();
+            showStatus('Preview refreshed', 'success');
+        }
+        
+        async function convertToPdf() {
+            if (isProcessing) return;
+            isProcessing = true;
+            
+            try {
+                const htmlContent = htmlEditor.value.trim();
+                
+                if (!htmlContent) {
+                    showStatus('Please enter some HTML content', 'warning');
+                    isProcessing = false;
+                    return;
+                }
+                
+                // Show progress
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '10%';
+                progressText.textContent = 'Preparing document...';
+                convertBtn.disabled = true;
+                previewBtn.disabled = true;
+                
+                // Get options
+                const pageSize = pageSizeSelect.value;
+                const orientation = pageOrientationSelect.value;
+                const margin = parseInt(marginSelect.value);
+                
+                showStatus('Converting HTML to PDF...', 'warning');
+                
+                // Create a temporary div to render the HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.style.position = 'absolute';
+                tempDiv.style.left = '-9999px';
+                tempDiv.style.width = pageSize === 'a4' ? '210mm' : 
+                                     pageSize === 'letter' ? '216mm' : '216mm';
+                tempDiv.innerHTML = htmlContent;
+                document.body.appendChild(tempDiv);
+                
+                // Update progress
+                progressBar.style.width = '30%';
+                progressText.textContent = 'Rendering HTML content...';
+                
+                // Use html2canvas to convert HTML to canvas
+                const canvas = await html2canvas(tempDiv, {
+                    scale: 2,
+                    logging: false,
+                    useCORS: true,
+                    allowTaint: true,
+                    onclone: (clonedDoc) => {
+                        // Ensure proper rendering in the cloned document
+                        const style = clonedDoc.createElement('style');
+                        style.textContent = `
+                            body { 
+                                margin: 0; 
+                                padding: ${margin}mm;
+                                -webkit-print-color-adjust: exact !important;
+                                print-color-adjust: exact !important;
+                            }
+                            @page { 
+                                size: ${pageSize} ${orientation}; 
+                                margin: 0; 
+                            }
+                        `;
+                        clonedDoc.head.appendChild(style);
+                    }
+                });
+                
+                // Remove temp div
+                document.body.removeChild(tempDiv);
+                
+                // Update progress
+                progressBar.style.width = '70%';
+                progressText.textContent = 'Generating PDF document...';
+                
+                // Create PDF
+                const pdf = new jsPDF({
+                    orientation: orientation,
+                    unit: 'mm',
+                    format: pageSize
+                });
+                
+                // Calculate dimensions
+                const imgWidth = pdf.internal.pageSize.getWidth() - margin * 2;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                // Add image to PDF
+                pdf.addImage(canvas.toDataURL('image/png', 1.0), 'PNG', margin, margin, imgWidth, imgHeight);
+                
+                // Update progress
+                progressBar.style.width = '90%';
+                progressText.textContent = 'Finalizing PDF...';
+                
+                // Set PDF metadata
+                pdf.setProperties({
+                    title: 'Converted HTML Document',
+                    creator: 'HTML to PDF Converter',
+                    producer: 'HTML to PDF Converter'
+                });
+                
+                // Save PDF
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                pdf.save(`document-${timestamp}.pdf`);
+                
+                // Complete progress
+                progressBar.style.width = '100%';
+                progressText.textContent = 'Conversion complete!';
+                
+                showStatus('PDF generated successfully', 'success');
+                
+            } catch (error) {
+                console.error('Conversion error:', error);
+                showStatus('Error during conversion: ' + error.message, 'error');
+            } finally {
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    convertBtn.disabled = false;
+                    previewBtn.disabled = false;
+                    isProcessing = false;
+                }, 1000);
+            }
+        }
+        
+        function exportHtml() {
+            const htmlContent = htmlEditor.value.trim();
+            if (!htmlContent) {
+                showStatus('No HTML content to export', 'warning');
+                return;
+            }
+            
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'document.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showStatus('HTML exported successfully', 'success');
+        }
+        
+        function loadSample() {
+            htmlEditor.value = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Professional Document</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6; 
+            padding: 2rem;
+            color: #2d3748;
+        }
+        h1 { 
+            color: #4a6bdf;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1.5rem 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Professional PDF Document</h1>
+    <p>This document demonstrates the conversion of HTML to a polished PDF.</p>
+    
+    <table>
+        <tr>
+            <th>Item</th>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Price</th>
+        </tr>
+        <tr>
+            <td>Web Design</td>
+            <td>Professional website redesign</td>
+            <td>1</td>
+            <td>$2,500.00</td>
+        </tr>
+        <tr>
+            <td>SEO Package</td>
+            <td>Search engine optimization</td>
+            <td>1</td>
+            <td>$1,200.00</td>
+        </tr>
+        <tr>
+            <td>Content Creation</td>
+            <td>Website copywriting</td>
+            <td>10</td>
+            <td>$800.00</td>
+        </tr>
+    </table>
+    
+    <div style="margin-top: 2rem; text-align: right;">
+        <p><strong>Total: $4,500.00</strong></p>
+    </div>
+</body>
+</html>`;
+            previewHtml();
+            showStatus('Professional sample HTML loaded', 'success');
+        }
+        
+        function clearEditor() {
+            htmlEditor.value = '';
+            previewFrame.srcdoc = '';
+            showStatus('Editor cleared', 'success');
+        }
+        
+        function showStatus(message, type) {
+            statusText.textContent = message;
+            statusMessage.className = `status ${type}`;
+            
+            const iconClass = {
+                'success': 'fa-check-circle',
+                'error': 'fa-exclamation-circle',
+                'warning': 'fa-info-circle'
+            }[type];
+            
+            statusMessage.querySelector('.status-icon').className = `fas ${iconClass} status-icon`;
+            
+            // Show status
+            statusMessage.classList.add('visible');
+            
+            // Hide after delay if not warning
+            if (type !== 'warning') {
+                setTimeout(() => {
+                    statusMessage.classList.remove('visible');
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

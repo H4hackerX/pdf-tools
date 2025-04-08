@@ -478,26 +478,30 @@
             }
         });
 
-        // Login form
-        document.getElementById('loginForm')?.addEventListener('submit', function (e) {
-            e.preventDefault();
-            hideMessages('login');
+        // Login form - corrected version
+    document.getElementById('loginForm')?.addEventListener('submit', function (e) {
+        e.preventDefault();
+        hideMessages('login');
 
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.username === username && u.password === password);
+        const loginInput = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        
+        // Check both username and email (case insensitive for email)
+        const user = users.find(u => 
+            (u.username.toLowerCase() === loginInput.toLowerCase() || 
+            u.email.toLowerCase() === loginInput.toLowerCase()) && 
+            u.password === password
+        );
 
-            if (user) {
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                // Redirect to dashboard in a real app
-                alert('Login successful! Redirecting to dashboard...');
-                // window.location.href = 'dashboard.html';
-            } else {
-                showMessage('loginError', 'Invalid username or password');
-            }
-        });
-
+        if (user) {
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            // Uncomment this line and ensure dashboard.html exists
+            window.location.href = 'main.html';
+        } else {
+            showMessage('loginError', 'Invalid username/email or password');
+        }
+    });
         // Forgot password form
         document.getElementById('forgotForm')?.addEventListener('submit', function (e) {
             e.preventDefault();
